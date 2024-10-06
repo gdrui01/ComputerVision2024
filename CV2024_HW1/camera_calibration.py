@@ -59,19 +59,82 @@ ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_siz
 Vr = np.array(rvecs)
 Tr = np.array(tvecs)
 extrinsics = np.concatenate((Vr, Tr), axis=1).reshape(-1,6)
-"""
-Write your code here
 
 
+# Initialize matrix for storing homographies
+homographies = []
 
+# Compute homography for each image
+for i in range(len(objpoints)):
+    obj_pts = objpoints[i]
+    img_pts = imgpoints[i].reshape(-1, 2)
 
-"""
+    A = []
+    for j in range(len(obj_pts)):
+        X, Y, Z = obj_pts[j][0], obj_pts[j][1], 1
+        x, y = img_pts[j][0], img_pts[j][1]
+        
+        A.append([X, Y, Z, 0, 0, 0, -x*X, -x*Y, -x*Z])
+        A.append([0, 0, 0, X, Y, Z, -y*X, -y*Y, -y*Z])
+
+    A = np.array(A)
+    U, S, Vh = np.linalg.svd(A)
+    H = Vh[-1].reshape(3, 3)
+
+    homographies.append(H)
+
+# Compute the matrix B from homographies
+V = []
+for H in homographies:
+    h1, h2, h3 = H[:, 0], H[:, 1], H[:, 2]
+    
+    V.append([h1[0]*h2[0], h1[0]*h2[1] + h1[1]*h2[0], h1[1]*h2[1], h1[2]*h2[0] + h1[0]*h2[2], h1[2]*h2[1] + h1[1]*h2[2], h1[2]*h2[2]])
+    V.append([h1[0]*h1[0] - h2[0]*h2[0], 2*(h1[0]*h1[1] - h2[0]*h2[1]), h1[1]*h1[1] - h2[1]*h2[1], 2*(h1[0]*h1[2] - h2[0]*h2[2]), 2*(h1[1]*h1[2] - h2[1]*h2[2]), h1[2]*h1[2] - h2[2]*h2[2]])
+
+V = np.array(V)
+
+# Solve for B
+_, _, Vh = np.linalg.svd(V)
+b = Vh[-1]
+
+# Reshape B
+B = np.array([
+    [b[0], b[1], b[3]],
+    [b[1], b[2], b[4]],
+    [b[3], b[4], b[5]]
+])
+
+print("Matrix B: " , B)
+# Compute intrinsic matrix using SVD instead of Cholesky
+U, D, Vt = np.linalg.svd(B)
+K_inv = np.dot(U, np.sqrt(np.diag(D)))
+K = np.linalg.inv(K_inv)
+
+# Find the extrinsics for each image
+extrinsics = []
+for H in homographies:
+    H_normalized = H / np.linalg.norm(H[:, 0])
+    r1 = np.linalg.inv(K).dot(H_normalized[:, 0])
+    r2 = np.linalg.inv(K).dot(H_normalized[:, 1])
+    t = np.linalg.inv(K).dot(H_normalized[:, 2])
+
+    # Ensure orthogonality of r1 and r2, then compute r3
+    r3 = np.cross(r1, r2)
+    R = np.column_stack((r1, r2, r3))
+
+    extrinsics.append(np.hstack((R, t.reshape(3, 1))))
+
+extrinsics = np.array(extrinsics)
+
 # show the camera extrinsics
 print('Show the camera extrinsics')
 # plot setting
 # You can modify it for better visualization
 fig = plt.figure(figsize=(10, 10))
-ax = fig.gca(projection='3d')
+#fix later ax = fig.gca(projection='3d')
+
+ax = fig.add_subplot(111, projection='3d')
+
 # camera setting
 camera_matrix = mtx
 cam_width = 0.064/0.1
