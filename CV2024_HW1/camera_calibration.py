@@ -55,11 +55,12 @@ img_size = img[0].shape
 # You need to comment these functions and write your calibration function from scratch.
 # Notice that rvecs is rotation vector, not the rotation matrix, and tvecs is translation vector.
 # In practice, you'll derive extrinsics matrixes directly. The shape must be [pts_num,3,4], and use them to plot.
+"""
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size,None,None)
 Vr = np.array(rvecs)
 Tr = np.array(tvecs)
 extrinsics = np.concatenate((Vr, Tr), axis=1).reshape(-1,6)
-
+"""
 
 # Initialize matrix for storing homographies
 homographies = []
@@ -73,7 +74,7 @@ for i in range(len(objpoints)):
     for j in range(len(obj_pts)):
         X, Y, Z = obj_pts[j][0], obj_pts[j][1], 1
         x, y = img_pts[j][0], img_pts[j][1]
-        
+
         A.append([X, Y, Z, 0, 0, 0, -x*X, -x*Y, -x*Z])
         A.append([0, 0, 0, X, Y, Z, -y*X, -y*Y, -y*Z])
 
@@ -87,7 +88,7 @@ for i in range(len(objpoints)):
 V = []
 for H in homographies:
     h1, h2, h3 = H[:, 0], H[:, 1], H[:, 2]
-    
+
     V.append([h1[0]*h2[0], h1[0]*h2[1] + h1[1]*h2[0], h1[1]*h2[1], h1[2]*h2[0] + h1[0]*h2[2], h1[2]*h2[1] + h1[1]*h2[2], h1[2]*h2[2]])
     V.append([h1[0]*h1[0] - h2[0]*h2[0], 2*(h1[0]*h1[1] - h2[0]*h2[1]), h1[1]*h1[1] - h2[1]*h2[1], 2*(h1[0]*h1[2] - h2[0]*h2[2]), 2*(h1[1]*h1[2] - h2[1]*h2[2]), h1[2]*h1[2] - h2[2]*h2[2]])
 
@@ -104,8 +105,7 @@ B = np.array([
     [b[3], b[4], b[5]]
 ])
 
-print("Matrix B: " , B)
-# Compute intrinsic matrix using SVD instead of Cholesky
+# Compute intrinsic matrix using SVD
 U, D, Vt = np.linalg.svd(B)
 K_inv = np.dot(U, np.sqrt(np.diag(D)))
 K = np.linalg.inv(K_inv)
@@ -126,17 +126,19 @@ for H in homographies:
 
 extrinsics = np.array(extrinsics)
 
-# show the camera extrinsics
+# Visualization of camera extrinsics
 print('Show the camera extrinsics')
-# plot setting
+
+# Plot setting
 # You can modify it for better visualization
 fig = plt.figure(figsize=(10, 10))
+ax = fig.add_subplot(111, projection='3d')
 #fix later ax = fig.gca(projection='3d')
 
 ax = fig.add_subplot(111, projection='3d')
 
 # camera setting
-camera_matrix = mtx
+camera_matrix = K
 cam_width = 0.064/0.1
 cam_height = 0.032/0.1
 scale_focal = 1600
