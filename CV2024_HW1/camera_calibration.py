@@ -8,7 +8,7 @@ from PIL import Image
 # (8,6) is for the given testing images.
 # If you use the another data (e.g. pictures you take by your smartphone), 
 # you need to set the corresponding numbers.
-corner_x = 7
+corner_x = 7 
 corner_y = 7
 objp = np.zeros((corner_x*corner_y,3), np.float32)
 objp[:,:2] = np.mgrid[0:corner_x, 0:corner_y].T.reshape(-1,2)
@@ -18,7 +18,7 @@ objpoints = [] # 3d points in real world space
 imgpoints = [] # 2d points in image plane.
 
 # Make a list of calibration images
-images = glob.glob('data/*.jpg')
+images = glob.glob('data/custom/*.jpeg')
 
 # Step through the list and search for chessboard corners
 print('Start finding chessboard corners...')
