@@ -18,7 +18,7 @@ objpoints = [] # 3d points in real world space
 imgpoints = [] # 2d points in image plane.
 
 # Make a list of calibration images
-images = glob.glob('data/custom/*.jpeg')
+images = glob.glob('data/*.jpg')
 
 # Step through the list and search for chessboard corners
 print('Start finding chessboard corners...')
@@ -105,10 +105,12 @@ B = np.array([
     [b[3], b[4], b[5]]
 ])
 
-# Compute intrinsic matrix using SVD
-U, D, Vt = np.linalg.svd(B)
-K_inv = np.dot(U, np.sqrt(np.diag(D)))
-K = np.linalg.inv(K_inv)
+# Compute intrinsic matrix using Cholesky decomposition
+K_inv = np.linalg.cholesky(B).T  # We transpose it to get the upper triangular matrix K_inv
+K = np.linalg.inv(K_inv)  # Invert to get the intrinsic matrix K
+
+# Normalize K to ensure K[2,2] = 1 (common practice)
+K = K / K[2, 2]
 
 # Find the extrinsics for each image
 extrinsics = []
