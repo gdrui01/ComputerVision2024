@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 
 def main():
     # Load images
-    image1 = cv2.imread('CV2024_HW3/data/TV1.jpg')
-    image2 = cv2.imread('CV2024_HW3/data/TV2.jpg')
+    image1 = cv2.imread('CV2024_HW3/data/hill1.JPG')
+    image2 = cv2.imread('CV2024_HW3/data/hill2.JPG')
 
     # Convert to grayscale
     gray1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
@@ -36,6 +36,7 @@ def main():
 
     # Compute homography matrix using RANSAC
     H = homomat(matched_points_img1, matched_points_img2)
+    #H = compute_homography_eigen(matched_points_img1,matched_points_img2)
 
     # Draw matches (for visualization)
     matched_image = cv2.drawMatches(image1, keypoints1, image2, keypoints2, good_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
@@ -83,7 +84,8 @@ def homomat(points_in_img1, points_in_img2, num_iterations=2000, threshold=5.0):
         sample_points_img2 = points_in_img2[idx]
 
         # Step II: Compute homography matrix mapping img2 to img1
-        H, _ = cv2.findHomography(sample_points_img2, sample_points_img1, method=0)
+        #H, _ = cv2.findHomography(sample_points_img2, sample_points_img1, method=0)
+        H = compute_homography_eigen(sample_points_img2,sample_points_img1)
 
         if H is None:
             continue
@@ -113,6 +115,39 @@ def homomat(points_in_img1, points_in_img2, num_iterations=2000, threshold=5.0):
         best_H, _ = cv2.findHomography(points_in_img2_inliers, points_in_img1_inliers, method=0)
 
     return best_H
+
+def compute_homography_eigen(points_src, points_dst):
+    """
+    Compute the homography matrix H using the normalized DLT method.
+    
+    Parameters:
+        points_src (numpy.ndarray): Source points from image 1, shape (N, 2).
+        points_dst (numpy.ndarray): Corresponding destination points from image 2, shape (N, 2).
+    
+    Returns:
+        H (numpy.ndarray): Homography matrix (3x3).
+    """
+
+    N = points_src.shape[0]
+    A = np.zeros((2 * N, 9))
+
+    for i in range(N):
+        xs, ys = points_src[i]
+        xd, yd = points_dst[i]
+
+        A[2 * i] = [-xs, -ys, -1, 0, 0, 0, xd * xs, xd * ys, xd]
+        A[2 * i + 1] = [0, 0, 0, -xs, -ys, -1, yd * xs, yd * ys, yd]
+
+    # Compute SVD of A
+    _, _, Vt = np.linalg.svd(A)
+    h = Vt[-1, :]
+    H_norm = h.reshape((3, 3))
+
+    # Normalize H so that H[2, 2] = 1
+    H_norm = H_norm / H_norm[2, 2]
+
+    return H_norm
+
 
 def warp(img1, img2, H):
     """
