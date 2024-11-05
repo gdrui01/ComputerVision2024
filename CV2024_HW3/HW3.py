@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 
 def main():
     # Load images
-    image1 = cv2.imread('CV2024_HW3/data/hill1.JPG')
-    image2 = cv2.imread('CV2024_HW3/data/hill2.JPG')
+    image1 = cv2.imread('CV2024_HW3/data/TV1.jpg')
+    image2 = cv2.imread('CV2024_HW3/data/TV2.jpg')
 
     # Convert to grayscale
     gray1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
