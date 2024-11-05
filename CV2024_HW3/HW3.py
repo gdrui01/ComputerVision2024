@@ -24,7 +24,7 @@ def main():
     # Match descriptors using KNN with k=2
     matches = bf.knnMatch(descriptors1, descriptors2, k=2)
 
-    # Apply ratio test as per Lowe's ratio (0.75 is commonly used threshold)
+    # Apply ratio test as per Lowe's ratio 
     good_matches = []
     for m, n in matches:
         if m.distance < 0.75 * n.distance:
@@ -62,12 +62,6 @@ def main():
 def homomat(points_in_img1, points_in_img2, num_iterations=2000, threshold=5.0):
     """
     Use RANSAC to compute the best homography matrix between two images.
-    
-    Parameters:
-        points_in_img1 (numpy.ndarray): Matched points from image 1, shape (N, 2).
-        points_in_img2 (numpy.ndarray): Matched points from image 2, shape (N, 2).
-        num_iterations (int): Number of RANSAC iterations.
-        threshold (float): Distance threshold to count inliers.
         
     Returns:
         best_H (numpy.ndarray): Homography matrix with the highest number of inliers.
@@ -117,16 +111,9 @@ def homomat(points_in_img1, points_in_img2, num_iterations=2000, threshold=5.0):
     return best_H
 
 def compute_homography_eigen(points_src, points_dst):
-    """
-    Compute the homography matrix H using the normalized DLT method.
     
-    Parameters:
-        points_src (numpy.ndarray): Source points from image 1, shape (N, 2).
-        points_dst (numpy.ndarray): Corresponding destination points from image 2, shape (N, 2).
+    #Compute the homography matrix H 
     
-    Returns:
-        H (numpy.ndarray): Homography matrix (3x3).
-    """
 
     N = points_src.shape[0]
     A = np.zeros((2 * N, 9))
