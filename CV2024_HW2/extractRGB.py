@@ -37,21 +37,20 @@ def main():
     g_offset = apply_random_offset(g_channel)
     b_offset = apply_random_offset(b_channel)
 
+    # Stack the offset channels vertically
+    stacked_image = np.vstack([r_offset, g_offset, b_offset])
+
     # Ensure the output directory exists
     output_dir = 'CV2024_HW2/output'
     os.makedirs(output_dir, exist_ok=True)
 
-    # Save the offset images
-    cv2.imwrite(os.path.join(output_dir, 'red_channel_offset.jpg'), r_offset)
-    cv2.imwrite(os.path.join(output_dir, 'green_channel_offset.jpg'), g_offset)
-    cv2.imwrite(os.path.join(output_dir, 'blue_channel_offset.jpg'), b_offset)
+    # Save the stacked image
+    output_path = os.path.join(output_dir, 'custom.jpg')
+    cv2.imwrite(output_path, stacked_image)
+    print(f"Stacked image saved to {output_path}")
 
-    print(f"Offset images saved in {output_dir}")
-
-    # Optionally display the offset images
-    cv2.imshow('Red Channel (Offset)', r_offset)
-    cv2.imshow('Green Channel (Offset)', g_offset)
-    cv2.imshow('Blue Channel (Offset)', b_offset)
+    # Display the stacked image
+    cv2.imshow('Stacked Image with Offset Channels', stacked_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
