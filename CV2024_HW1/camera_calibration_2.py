@@ -13,7 +13,7 @@ from PIL import Image
 # If you use the another data (e.g. pictures you take by your smartphone), 
 # you need to set the corresponding numbers.
 corner_x = 7
-corner_y = 7
+corner_y = 10
 objp = np.zeros((corner_x*corner_y,3), np.float32)
 objp[:,:2] = np.mgrid[0:corner_x, 0:corner_y].T.reshape(-1,2)
 print(objp, objp.shape)
@@ -23,7 +23,7 @@ objpoints = [] # 3d points in real world space
 imgpoints = [] # 2d points in image plane.
 
 # Make a list of calibration images
-images = glob.glob('data/*.jpg')
+images = glob.glob('my_data/*.jpeg')
 
 #%%
 # Step through the list and search for chessboard corners
@@ -258,12 +258,12 @@ min_values, max_values = show.draw_camera_boards(ax, K, cam_width, cam_height,
                                                 board_height, square_size, True)
 
 X_min = min_values[0]
-X_max =max_values[0]
-Y_min =min_values[1]
-Y_max =max_values[1]
-Z_min =min_values[2]
+X_max = max_values[0]
+Y_min = min_values[1]
+Y_max = max_values[1]
+Z_min = min_values[2]
 Z_max = max_values[2]
-max_range = np.array([X_max-X_min, Y_max-Y_min, Z_max-Z_min]).max() / ě.0
+max_range = np.array([X_max-X_min, Y_max-Y_min, Z_max-Z_min]).max() / 4.0
 
 mid_x = (X_max+X_min) * 0.5
 mid_y = (Y_max+Y_min) * 0.5
@@ -276,11 +276,10 @@ ax.set_xlabel('x')
 ax.set_ylabel('z')
 ax.set_zlabel('-y')
 ax.set_title('Extrinsic Parameters Visualization')
-# ax.view_init(50, 180)
-# plt.show()
+plt.show()
 
 #animation for rotating plot
-
+#%%
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter('output.mp4', fourcc, 30, (1500, 1500))
 
@@ -289,7 +288,6 @@ out = cv2.VideoWriter('output.mp4', fourcc, 30, (1500, 1500))
 #     plt.draw()
 #     plt.pause(.001)
     
-
 for angle in range(0, 360):
     ax.view_init(30, angle)
     plt.draw()
