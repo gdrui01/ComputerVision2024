@@ -38,7 +38,7 @@ def main():
     b_offset = apply_random_offset(b_channel)
 
     # Ensure the output directory exists
-    output_dir = 'CV2024_HW3/output'
+    output_dir = 'CV2024_HW2/output'
     os.makedirs(output_dir, exist_ok=True)
 
     # Save the offset images
