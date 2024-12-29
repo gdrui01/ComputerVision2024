@@ -43,6 +43,55 @@ def wiener_filter(g, h, n):
     
     return np.clip(f_restored, 0, 1)
 
+def wiener_deconvolution(blurred_image, kernel, noise_ratio=0.01):
+    """
+    Perform Wiener deconvolution on a blurred image using NumPy.
+    
+    Args:
+        blurred_image: Array of shape (H, W) - the blurred input image
+        kernel: Array of shape (k, k) - the blurring kernel
+        noise_ratio: Float - regularization parameter (noise to signal ratio)
+    
+    Returns:
+        Array of shape (H, W) - the deconvolved image
+    """
+    # Get image dimensions
+    H, W = blurred_image.shape
+    k_h, k_w = kernel.shape
+    
+    # Pad kernel to match image size
+    padded_kernel = np.zeros((H, W))
+    start_h = (H - k_h) // 2
+    start_w = (W - k_w) // 2
+    padded_kernel[start_h:start_h + k_h, start_w:start_w + k_w] = kernel
+    
+    # Center and normalize the kernel
+    padded_kernel = np.roll(padded_kernel, 
+                           shift=(-(k_h//2), -(k_w//2)), 
+                           axis=(0, 1))
+    padded_kernel = padded_kernel / padded_kernel.sum()
+    
+    # Convert to frequency domain
+    blurred_freq = np.fft.rfft2(blurred_image)
+    kernel_freq = np.fft.rfft2(padded_kernel)
+    
+    # Wiener deconvolution in frequency domain
+    # G = H* / (|H|^2 + NSR)
+    kernel_conj = np.conj(kernel_freq)
+    denominator = np.abs(kernel_freq) ** 2 + noise_ratio
+    wiener_filter = kernel_conj / denominator
+    
+    # Apply filter
+    result_freq = blurred_freq * wiener_filter
+    
+    # Convert back to spatial domain
+    result = np.fft.irfft2(result_freq, s=(H, W))
+    
+    # Handle numerical artifacts
+    result = np.clip(result, 0, 1)
+    
+    return result
+
 def degrade_image(f, h, n):
     """
     Degrades an image by applying blur and noise.

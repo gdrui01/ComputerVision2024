@@ -10,7 +10,7 @@ from util import *
 
 np.resize
 
-KERNEL_SIZE = 256
+KERNEL_SIZE = 25
 
 def generate_meshgrid(w,h):
     """
@@ -53,12 +53,14 @@ def line_parametric_kernel(length, angle = 0, size = KERNEL_SIZE):
     mask = np.abs(Y) < 1 & (np.abs(X) < midlength)
     
     k[mask] = 1
+
     k /= np.sum(k)
 
     k = transform_image(
         k,
         get_rotation_matrix_around_point(angle, midpoint, midpoint)
     )
+    k /= np.sum(k)
 
     return k
 
